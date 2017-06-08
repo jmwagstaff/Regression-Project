@@ -1,0 +1,60 @@
+---
+title: "Consumption for automatic and manual transmission"
+author: "Jacques wagstaff"
+date: "21 December 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Executive Summary
+Looking at a data set of a collection of cars, we are interested in exploring the relationship between a set of variables and miles per gallon (mpg). We are interested 
+in the following two questions: 1) “Is an automatic or manual transmission better for MPG” 2) "Quantify the MPG difference between automatic and manual transmissions". We have fitted a model, including all important regressors, and concluded that there
+is no significant change in mpg from automatic to manual given the data.
+
+## Exploratory Data Analysis
+First we collect data, and make factor variables
+```{r}
+data<-mtcars
+data$cyl  <- factor(data$cyl); data$vs   <- factor(data$vs); data$gear <- factor(data$gear)
+data$carb <- factor(data$carb); data$am   <- factor(data$am,labels=c("Automatic","Manual"))
+```
+Then we make an exploratory plot
+```{r, echo=FALSE,fig.height=3, fig.width=4, fig.align='center'}
+library(ggplot2)
+g = ggplot(data, aes(x = am, y = mpg, colour = wt))
+g = g + geom_point(size = 6, colour = "black") + geom_point(size = 4)
+g = g + xlab("Transmission") + ylab("Miles/(US) gallon")
+g
+```
+It looks like there is a difference in the avg mpg between automatic and manual 
+transmission, however there are a number of confounding variables. In this plot 
+we see how weight can have such an effect.
+
+## Fitting multiple models and model selection strategy
+The first model is to fit all the variables as regressors. Then we want to find the best model by testing which regressors are important or not. The 'step' function fits many models and finds the best.
+```{r}
+fitAll<-lm(mpg~.,data = data)
+fitBest <- step(fitAll, direction = "both",trace = 0)
+```
+Here we show a summary of the best model, and plot the diagnostics 
+```{r}
+round(summary(fitBest)$coeff,3)
+```
+
+```{r, echo=FALSE, fig.align='center'}
+par(mfrow=c(2,2))
+plot(fitBest)
+```
+We see no clear patterns in the residual plots, hence the model fits the data well. 
+We also see from the Q-Q plot that the errors are Gaussian as assumed.
+
+## Conclusion
+Now we can answer the questions: 1) “Is an automatic or manual transmission better for MPG”
+2) "Quantify the MPG difference between automatic and manual transmissions". By looking at the coefficient for manual transmission, we see that changing from automatic
+to manual increases the mpg on average by 1.8, keeping all other variables 
+constant. However, looking at the p-value for this coefficient, we see that this result is not significant, i.e. the confidence interval includes zero. There is no significant change in mpg from automatic to manual given the data.
+
+
